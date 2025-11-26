@@ -1,0 +1,81 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+
+on:
+  
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+jobs:
+
+  build:
+    
+    runs-on: ubuntu-latest
+
+
+    steps:
+    
+      - uses: actions/checkout@v4
+
+      # Add this step to configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # Add this step to login to ECR
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # The "Build Image" step is updated to tag with the ECR URI
+      - name: Build Image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: site/utc-app
+          IMAGE_TAG: ${{ github.run_number }}
+        run: | 
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG . 
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY .
+          
+      
+      # The "Push Image" step is updated to push to ECR
+      # This is necessary so the 'scan_image' job can pull the image from ECR.
+      - name: Push Image to ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: site/utc-app
+          IMAGE_TAG: ${{ github.run_number }}
+        run: |
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY
+
+  # Job for Snyk Image Scanning (with verification step)
+    
+  deploy:
+    needs: build # This job now depends on the 'scan_image' job completing successfully
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH to the server
+        uses: appleboy/ssh-action@v1
+        with:
+          host:    ${{secrets.HOST}}
+          username: ${{secrets.USERNAME_SSH}}
+          key:     ${{secrets.KEY}}
+          #port:    ${{secrets.PORT}}
+          script: |
+            export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+            export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            export AWS_REGION=${{ secrets.AWS_REGION }}
+            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 639794896634.dkr.ecr.us-east-1.amazonaws.com
+            docker pull 639794896634.dkr.ecr.us-east-1.amazonaws.com/site/utc-app:${{ github.run_number }}
+            docker rm -f resume
+            docker run -d --name resume -p 8080:5001 639794896634.dkr.ecr.us-east-1.amazonaws.com/site/utc-app:${{ github.run_number }} 
+            
+            
