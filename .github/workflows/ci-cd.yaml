@@ -29,12 +29,28 @@ jobs:
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
         id: login-ecr
-      - name: Build, Tag, and Push Image to Amazon ECR
+      - name: Build, Tag, Image to Amazon ECR
         id: build-image
         run: |
-            docker build -t ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} .
-            docker push ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
-        # - name: Output Image URI
-        #   run: echo "Image pushed: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
+            docker build -t ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} .  
+     # ----------------------------------------
+      # Stage: Trivy Container Image Scan
+      # ----------------------------------------
+      - name: Install Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          version: latest
+      - name: Scan container image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+          format: table
+          #vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+      - name: Push Image to Amazon ECR
+        run: |
+             docker push ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} 
+
       
        
