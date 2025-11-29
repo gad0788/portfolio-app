@@ -1,7 +1,4 @@
-# This is a basic workflow to help you get stadrted with Actions
-
-name: CI
-
+name: Real time  ci/cd pipeline for portfolio app
 
 on:
   
@@ -10,11 +7,20 @@ on:
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
+env: 
+  python-version: 3.11
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.python-version }} # or $python-version
+      # - name: Unit Tests
+      #  run: |
+      #    python -m unittest discover -s app.py
+      #     pytest
       - name: Build Image
         run: |   
           docker build -t ${{secrets.USERNAME}}/portfolio:${{github.run_number}} . 
@@ -25,20 +31,7 @@ jobs:
             docker push ${{secrets.USERNAME}}/portfolio:${{github.run_number}}
             docker push ${{secrets.USERNAME}}/portfolio
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-     - name: SSH to the server
-       uses: appleboy/ssh-action@v1
-       with:
-         host:     ${{secrets.HOST}}
-         username: ${{secrets.USERNAME_SSH}}
-         key:      ${{secrets.KEY}}
-         #port:     ${{secrets.PORT}}
-         script: |
-           docker rm -f resume
-           docker run -d --name resume -p 8080:5001 ${{secrets.USERNAME}}/portfolio:${{github.run_number}}
+
          
            
 
