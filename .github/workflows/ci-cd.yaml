@@ -49,7 +49,7 @@ jobs:
           format: table
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
-          exit-code: '0'  # doesn't fail pipeline
+          exit-code: '0'
 
       - name: Push Image to Amazon ECR
         run: |
@@ -57,6 +57,7 @@ jobs:
 
       - name: Store image in GitHub Environment Variable
         run: echo "IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}" >> $GITHUB_ENV
+
 
   Deploy:
     runs-on: ubuntu-latest
@@ -72,10 +73,15 @@ jobs:
           role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ env.aws_region }}
 
-      - name: Deploy to ECS Service
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-        with:
-          task-definition: demo-task.json
-          service: demo-service
-          cluster: staging-cluster
-          wait-for-service-stability: true
+      - name: Force new ECS deployment
+        run: |
+          aws ecs update-service \
+            --cluster staging-cluster \
+            --service demo-service \
+            --force-new-deployment
+
+      - name: Wait for ECS service stability
+        run: |
+          aws ecs wait services-stable \
+            --cluster staging-cluster \
+            --services demo-service
