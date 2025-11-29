@@ -9,8 +9,7 @@ on:
 env:
     aws_region: us-east-1
     AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-    ECR_REPOSITORY: uat
-    `
+    
 jobs:
   build:
     runs-on: ubuntu-latest  # using shared github runner[ubuntu, windows, macos]
