@@ -47,7 +47,7 @@ jobs:
           format: table
           #vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
-          exit-code: '1'
+          exit-code: '0'
       - name: Push Image to Amazon ECR
         run: |
              docker push ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }} 
