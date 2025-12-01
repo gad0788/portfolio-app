@@ -63,6 +63,7 @@ jobs:
                       --cluster staging-cluster \
                       --service demo-service \
                       --force-new-deployment
+                      --region ${{ env.aws_region }}
 
             
                           
