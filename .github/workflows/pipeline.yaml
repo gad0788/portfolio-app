@@ -1,0 +1,36 @@
+name : Building and Deploying  container image to AWS ECR and ECS
+
+on:
+
+    push:
+        branches: [ "main" ]
+    pull_request:
+        branches: [ "main" ]
+permissions:
+  id-token: write
+  contents: read
+  
+env:
+    aws_region: us-east-1
+    AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+    ECR_REPOSITORY: production
+    IMAGE_TAG: ${{ github.run_number }}
+  
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code from Repo
+              uses: actions/checkout@v4
+
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
+                  aws-region: ${{ env.aws_region }}
+
+            - name: Login to Amazon ECR
+              uses: aws-actions/amazon-ecr-login@v2
+              id: login-ecr
+
+            
