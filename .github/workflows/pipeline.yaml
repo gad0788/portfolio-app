@@ -14,7 +14,7 @@ permissions:
 env:
   AWS_REGION: us-east-1
   AWS_ROLE: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-  ECR_REPO_NAME: dev
+  ECR_REPO_NAME: uat
   IMAGE_TAG: ${{ github.run_number }}
   TASK_DEFINITION: demo-task
   ECS_CLUSTER: staging-cluster
