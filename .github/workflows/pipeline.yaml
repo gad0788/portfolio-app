@@ -33,12 +33,13 @@ jobs:
               uses: aws-actions/amazon-ecr-login@v2
               id: login-ecr
             - name: Install Trivy
-              uses: aquasecurity/trivy-action@0.20.0
-             with:
-                  scan-type: fs               # scan filesystem
-                  severity: HIGH,CRITICAL     # choose severities
-                  exit-code: 1                # fail pipeline if issues found
+              uses: aquasecurity/trivy-action@v0.9.0
+              with:
+                  scan-type: fs
+                  severity: HIGH,CRITICAL
+                  exit-code: 1
                   format: table
                   ignore-unfixed: true
+
 
             
