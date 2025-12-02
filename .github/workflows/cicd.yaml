@@ -1,0 +1,37 @@
+name: poc application cicd pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+permissions:
+  contents: read
+  id-token: write
+  
+env:
+  AWS_REGION:  us-east-1
+  AWS_ROLE: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+  ECR_REPO_NAME: uat
+  IMAGE_TAG: ${{ github.run_number }}
+  TASK_DEFINITION: demo-task
+  ECS_CLUSTER: staging-cluster
+  ECS_SERVICE: demo-service
+  CONTAINER_NAME: nginx
+  
+jobs: # Continous Integration  job 
+    Build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checking code out from repo
+              uses: actions/checkout@v3
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with: 
+                role-to-assume: ${{env.AWS_ROLE}}
+                aws-region: ${{env.AWS_REGION}}
+            - name: Login to Amazon ECR
+              id: login-ecr
+              uses: aws-actions/amazon-ecr-login@v1
