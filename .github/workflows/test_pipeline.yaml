@@ -22,8 +22,8 @@ permissions:
 jobs:
     build:
         runs-on: ubuntu-latest
-        outputs:  # Define outputs for the Deploy job
-          image-uri: ${{ steps.set-image.outputs.image-uri }}
+        # outputs:  # Define outputs for the Deploy job
+        #   image-uri: ${{ steps.set-image.outputs.image-uri }}
         steps:
           - uses: actions/checkout@v3
           - name: Set up Python ${{ env.python-version }}
