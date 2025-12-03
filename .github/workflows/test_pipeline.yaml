@@ -58,7 +58,7 @@ jobs:
               output: "trivy-image-results.json"
               severity: "CRITICAL,HIGH"
           - name: Push image to ECR
-           run: |
+            run: |
               docker push ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPO_NAME}}:${{ env.IMAGE_TAG }}
          
 
