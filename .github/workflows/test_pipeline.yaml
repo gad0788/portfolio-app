@@ -12,12 +12,12 @@ env:
     ECR_REPO_NAME: portfolio-app
     ACCOUNT_ID: ${{secrets.AWS_ACCOUNT_ID}}
     AWS_ROLE_ARN: ${{secrets.AWS_ROLE_ARN}}
-    
-    
-    
+        
 permissions:
   contents: read
   id-token: write
+  pull-requests: write
+  
 jobs:
     build:
         runs-on: ubuntu-latest
@@ -40,5 +40,11 @@ jobs:
             with:
               role-to-assume: ${{ env.AWS_ROLE_ARN }}
               aws-region: ${{ env.AWS_REGION }}
+          - name: Install AWS   CLI
+            run: |
+              curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+              unzip awscliv2.zip
+              sudo ./aws/install
+              aws  s3 ls
 
  
