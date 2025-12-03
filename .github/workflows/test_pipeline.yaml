@@ -9,7 +9,7 @@ on:
 env:
     python-version: '3.9'
     AWS_REGION: us-east-1
-    ECR_REPO_NAME: portfolio-app
+    ECR_REPO_NAME: uat
     ACCOUNT_ID: ${{secrets.AWS_ACCOUNT_ID}}
     AWS_ROLE_ARN: ${{secrets.AWS_ROLE_ARN}}
     IMAGE_TAG: ${{ github.run_number }}
